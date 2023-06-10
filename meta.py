@@ -1,4 +1,4 @@
-# Copyright Nezametdinov E. Ildus 2022.
+# Copyright Nezametdinov E. Ildus 2023.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,7 @@ parser.add_argument(\
     help = "maximum number of non-static data members in types",\
     nargs='?',\
     type = int,\
-    default = 127)
+    choices = range(1, 256), metavar="[1-255]")
 
 args = parser.parse_args()
 

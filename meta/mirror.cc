@@ -1,40 +1,39 @@
-// Copyright Nezametdinov E. Ildus 2022.
+// Copyright Nezametdinov E. Ildus 2023.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef H_488DC17251AA4A0D8D8B3994795442DA
-#define H_488DC17251AA4A0D8D8B3994795442DA
+module; // Global module fragment.
 
-#include <climits>
+#include <limits.h>
+#include <stddef.h>
+
 #include <concepts>
-
 #include <utility>
 #include <tuple>
 #include <type_traits>
 
-namespace mirror {
+export module mirror;
+export namespace mirror {
 
 ////////////////////////////////////////////////////////////////////////////////
-// A concept that models types which can be reflected.
+// Definition of a concept that models types which can be reflected.
 ////////////////////////////////////////////////////////////////////////////////
 
-// clang-format off
 template <typename T>
-concept reflexible =
-    (std::is_aggregate_v<T> && std::default_initializable<T>) &&
+concept reflexible = //
+    std::is_aggregate_v<T> && std::default_initializable<T> &&
     (std::copy_constructible<T> || std::move_constructible<T>);
-// clang-format on
 
 ////////////////////////////////////////////////////////////////////////////////
-// Non-static data member counting.
+// Non-static data member counting utilities.
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace detail {
 
 // Special type which is convertible to any other type, except for possibly
-// cv-qualified versions of itself and corresponding reference types.
-template <typename T, std::size_t I>
+// cv-qualified versions of itself, and corresponding reference types.
+template <typename T, size_t I>
 struct universal {
     template <typename U>
     operator U() const noexcept
@@ -44,31 +43,28 @@ struct universal {
 // A concept for a type which is constructible with a sequence of arguments. The
 // size of the sequence is the same as the size of the non-type template
 // parameter pack.
-template <typename T, std::size_t... Indices>
+template <typename T, size_t... Indices>
 concept constructible_from = requires {
     T{std::declval<universal<T, Indices>>()...};
 };
 
 // A predicate which shows if the given type is constructible with the given
 // number of arguments.
-//
-// clang-format off
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 constexpr auto
 is_constructible =
-    []<std::size_t... Indices>(std::index_sequence<Indices...>) {
+    []<size_t... Indices>(std::index_sequence<Indices...>) {
         return constructible_from<T, Indices...>;
     }(std::make_index_sequence<N>{});
-// clang-format on
 
 // A median between two values.
-template <std::size_t L, std::size_t R>
+template <size_t L, size_t R>
 constexpr auto median = ((L / 2) + (R / 2) + ((1 + (L % 2) + (R % 2)) / 2));
 
 // Performs compile-time binary search.
-template <typename T, std::size_t L, std::size_t M, std::size_t R>
+template <typename T, size_t L, size_t M, size_t R>
 constexpr auto
-bisect() noexcept -> std::size_t {
+bisect() noexcept -> size_t {
     if constexpr(L == R) {
         return L;
     } else {
@@ -86,7 +82,7 @@ constexpr auto
 count_data_members() noexcept {
     // Compute the size of the type in bits. This will be the upper bound for
     // binary search.
-    constexpr auto bit_size = std::size_t{sizeof(T) * CHAR_BIT};
+    constexpr auto bit_size = size_t{sizeof(T) * CHAR_BIT};
     static_assert(bit_size / sizeof(T) == CHAR_BIT);
 
     // Run binary search.
@@ -95,24 +91,22 @@ count_data_members() noexcept {
 
 } // namespace detail
 
+////////////////////////////////////////////////////////////////////////////////
+// Reflection interface.
+////////////////////////////////////////////////////////////////////////////////
+
 // Count of the non-static data members in the given type.
 template <reflexible T>
 constexpr auto data_member_count = detail::count_data_members<T>();
-
-////////////////////////////////////////////////////////////////////////////////
-// Tuple construction.
-////////////////////////////////////////////////////////////////////////////////
 
 // Returns a tuple of references to non-static data members of the given object.
 template <reflexible T>
 constexpr auto
 reflect(T& x) noexcept
-    -> decltype(auto) requires(data_member_count<T> <= (@limit@)) {
+    requires(data_member_count<T> <= (@limit@)) {
     if constexpr(data_member_count<T> == 0) {
         return std::tuple<>{};
     } (@generate_specializations@)
 }
 
 } // namespace mirror
-
-#endif // H_488DC17251AA4A0D8D8B3994795442DA

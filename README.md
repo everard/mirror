@@ -8,14 +8,15 @@ Implementation uses the same basic idea as Antony Polukhin's
 limitations.
 
 # INSTALLATION
-The library consists of one header in the `src` directory. By default only types
-with up to 127 non-static data members can be viewed as tuples. To increase this
-number the `generate.sh` script can be used (requires python3 and clang-format).
+The library consists of one source file in the `src` directory. By default only
+types with up to 32 non-static data members can be viewed as tuples. To increase
+this number the `generate.sh` script can be used (requires python3 and
+clang-format).
 
-For example, to increase the limit to 256, the following command can be executed
+For example, to increase the limit to 255, the following command can be executed
 in a terminal:
 ```
-./generate.sh 256
+./generate.sh 255
 ```
 
 # USAGE
@@ -43,7 +44,7 @@ auto t = mirror::reflect(x);
 ```
 
 # LICENSE
-Copyright Nezametdinov E. Ildus 2022.
+Copyright Nezametdinov E. Ildus 2023.
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE_1_0.txt or copy at
 https://www.boost.org/LICENSE_1_0.txt)
