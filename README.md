@@ -7,8 +7,10 @@ Implementation uses the same basic idea as Antony Polukhin's
 [magic_get](https://github.com/apolukhin/magic_get), and has the same
 limitations.
 
+Hopefully, this library will become obsolete by the time C++26 comes out.
+
 # INSTALLATION
-The library consists of one source file in the `src` directory. By default only
+The library consists of one module file in the `src` directory. By default only
 types with up to 32 non-static data members can be viewed as tuples. To increase
 this number the `generate.sh` script can be used (requires python3 and
 clang-format).
@@ -20,7 +22,7 @@ in a terminal:
 ```
 
 # USAGE
-To obtain the number of non-static data members in a type use the
+To obtain the number of non-static data members in a type, use the
 `data_member_count` variable template:
 
 ```
@@ -33,7 +35,7 @@ static_assert(mirror::data_member_count<custom_type> == 4);
 ```
 
 To view an object of some type as a tuple of references to its non-static data
-members use the `reflect` function:
+members, use the `reflect` function:
 
 ```
 auto x = custom_type{1, 2, 3, 4.0f};

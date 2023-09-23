@@ -67,5 +67,5 @@ SpaceBeforeParens: Never,\
 SortIncludes: false,\
 DisableFormat: false}"
 
-python3 meta.py meta/mirror.cc src/mirror.cc $1
-clang-format --style="${STYLE}" -i src/mirror.cc
+python3 meta.py meta/mirror.ccm src/mirror.ccm $1
+clang-format --style="${STYLE}" -i src/mirror.ccm

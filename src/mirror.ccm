@@ -5,31 +5,25 @@
 //
 module; // Global module fragment.
 
-#include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <concepts>
+#include <limits>
+
 #include <utility>
 #include <tuple>
 #include <type_traits>
 
 export module mirror;
-export namespace mirror {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Definition of a concept that models types which can be reflected.
+//
+// 1. Non-static data member counting utilities.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-concept reflexible = //
-    std::is_aggregate_v<T> && std::default_initializable<T> &&
-    (std::copy_constructible<T> || std::move_constructible<T>);
-
-////////////////////////////////////////////////////////////////////////////////
-// Non-static data member counting utilities.
-////////////////////////////////////////////////////////////////////////////////
-
-namespace detail {
+namespace mirror::detail {
 
 // Special type which is convertible to any other type, except for possibly
 // cv-qualified versions of itself, and corresponding reference types.
@@ -78,16 +72,39 @@ bisect() noexcept -> size_t {
 template <typename T>
 constexpr auto
 count_data_members() noexcept {
+    // Obtain the number of bits in byte.
+    constexpr auto byte_width =
+        static_cast<size_t>(std::numeric_limits<unsigned char>::digits);
+
     // Compute the size of the type in bits. This will be the upper bound for
     // binary search.
-    constexpr auto bit_size = size_t{sizeof(T) * CHAR_BIT};
-    static_assert(bit_size / sizeof(T) == CHAR_BIT);
+    constexpr auto bit_size = static_cast<size_t>(sizeof(T) * byte_width);
+
+    // Make sure the size computation does not overflow.
+    static_assert(bit_size / sizeof(T) == byte_width);
 
     // Run binary search.
     return bisect<T, 0, median<0, bit_size>, bit_size>();
 }
 
-} // namespace detail
+} // namespace mirror::detail
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// 2. Reflection.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+export namespace mirror {
+
+////////////////////////////////////////////////////////////////////////////////
+// Definition of a concept that models types which can be reflected.
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+concept reflexible =
+    std::is_aggregate_v<T> && std::is_default_constructible_v<T> &&
+    std::move_constructible<T>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Reflection interface.
